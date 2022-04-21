@@ -47,7 +47,7 @@ def acoes(acaostr):
 
     if acao == 6:
         print("----------------------------------------------")
-        id = input("Informe o Id da manifestação que deseja procurar:")
+        id = input("Informe o Id da manifestação que deseja procurar:").strip()
         get_by_id(id)
 
     if acao == 7:
