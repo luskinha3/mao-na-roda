@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#1.0.0-snapshot
 from tabulate import tabulate
 
 manifestacoes = {}
