@@ -129,10 +129,9 @@ def acoes_logado(acaostr):
         get_by_id()
 
     if acao == 7:
-        # modificar o metodo de encerramento, colocar funcionalidade de remover.
         remover_manifestacao()
     if acao == 8:
-        print("adicionar comentario")
+        comentar_manifestacao()
 
     if acao == 9:
         list_manifestacoes_usr()
@@ -165,6 +164,11 @@ def remover_manifestacao():
             manifestacoes_usr.pop(id)
             manifestacoes.pop(id)
 
+def comentar_manifestacao():
+    print("-----------------------------------------------------")
+    list_manifestacoes()
+    print("-----------------------------------------------------")
+    id = int(input("Informe o id da manifestação que deseja comentar: "))
 
 def cadastra_manifestacao():
     global id
