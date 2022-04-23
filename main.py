@@ -7,14 +7,16 @@
 # sistema de cadastro e login -- feito
 # sistema de log-off -- feito
 # bug heap infinito -- feito
-# adicionar comentario a manifestação
-# bug de retornar vazio na saida dos dicionarios
-# tratar erros de inserir dados errados
-# bloquear comentarios de manifestações com status fechado.
-# verificar função get_by_id
+# tratar retorno vazio na saida dos dicionarios -- feito
+# adicionar o lsitar minhas reclamações -- feito
+# verificar função get_by_id -- feito
+# tratar erros de inserir dados errados -- feito
+
+# adicionar comentario a manifestação and bloquear comentarios de manifestações com status fechado
+# saber o tipo da manifestação e permitir ou não o encerramento.
+
 
 from tabulate import tabulate
-
 
 manifestacoes = {}
 manifestacoes[0] = {"ID": 1, "Nome": "Kamado tanjiro", "Tipo": "reclamação", "Conteudo": "espadas quebradiças"}
@@ -38,7 +40,6 @@ def acoes_login(acaostr):
         print("-------------------------------------")
         print("|         ! Ação invalida !         |")
 
-
     if acao == 1:
         login_usuario()
 
@@ -46,6 +47,7 @@ def acoes_login(acaostr):
         cadastro_usuairo()
     if acao == 3:
         sair()
+
 
 def cadastro_usuairo():
     print("-----------------------------------------------")
@@ -55,7 +57,7 @@ def cadastro_usuairo():
     email = input("Informe seu e-mail: ").strip().lower()
     senha = input("Informe sua senha: ")
     manifestacoes = {}
-    usuarios[email] = {"Nome":nome,"E-mail":email,"Senha":senha, "Manifestacoes":manifestacoes}
+    usuarios[email] = {"Nome": nome, "E-mail": email, "Senha": senha, "Manifestacoes": manifestacoes}
     print("-----------------------------------------------")
     print("|          ! Usuario cadastrado !             |")
     print("-----------------------------------------------")
@@ -68,8 +70,9 @@ def logout():
     usuario_logado = None
     logado = False
 
+
 def login_usuario():
-    global  usuario_logado
+    global usuario_logado
     global usuario_logado_nome
     global logado
     print("-----------------------------------------------")
@@ -90,16 +93,19 @@ def login_usuario():
         logado = True
 
 
+def list_manifestacoes_usr():
+    table = {}
+    global usuario_logado
+    manifestacoes = usuario_logado["Manifestacoes"]
+    for key, value in manifestacoes.items():
+        table[key] = value
 
-
-
-
-
+    imprimir_dicionario(table)
 
 
 def acoes_logado(acaostr):
     acao = int(acaostr)
-    if acao < 1 or acao > 9:
+    if acao < 0 or acao > 9:
         print("-------------------------------------")
         print("|         ! Ação invalida !         |")
 
@@ -118,14 +124,16 @@ def acoes_logado(acaostr):
         cadastro()
 
     if acao == 6:
-
         get_by_id()
 
     if acao == 7:
         encerrar_manifestacao()
     if acao == 8:
         print("adicionar comentario")
+
     if acao == 9:
+        list_manifestacoes_usr()
+    if acao == 0:
         logout()
 
 
@@ -136,8 +144,7 @@ def encerrar_manifestacao():
     print("----------------------------------------------")
     id = int(input("Informe o Id da manifestação que deseja encerrar:").strip())
     manifestacao_encerrada = manifestacoes.get(id)
-    manifestacao_encerrada["Status"]= "Encerrada"
-
+    manifestacao_encerrada["Status"] = "Encerrada"
 
 
 def cadastro():
@@ -152,13 +159,13 @@ def cadastro():
         print("-----------------------------------------------------------------")
     else:
         conteudo = input("Nos detalhe o que deseja manifestar: ").strip()
-        manifestacoes[id] = {"ID": id, "Nome": usuario_logado_nome, "Tipo": tipo, "Conteudo": conteudo, "Status": "Aberta"}
+        manifestacoes[id] = {"ID": id, "Nome": usuario_logado_nome, "Tipo": tipo, "Conteudo": conteudo,
+                             "Status": "Aberta"}
         manifestacoes_usuario = usuario_logado["Manifestacoes"]
         manifestacoes_usuario[id] = {"ID": id, "Tipo": tipo, "Conteudo": conteudo}
         print("----------------------------------------------")
         print("|   Nova manifestação criada com sucesso!    |")
         id = len(manifestacoes) + 1
-
 
 
 def sair():
@@ -171,10 +178,9 @@ def list_manifestacoes():
     table = {}
     global manifestacoes
     for key, value in manifestacoes.items():
-     table[key] = value
+        table[key] = value
 
     imprimir_dicionario(table)
-
 
 
 def busca_por_tipo(tipo):
@@ -186,17 +192,17 @@ def busca_por_tipo(tipo):
     imprimir_dicionario(table)
 
 
-
 def get_by_id():
+    table = {}
     print("----------------------------------------------")
-    list_manifestacoes()
     id = int(input("Informe o Id da manifestação que deseja procurar:").strip()) - 1
     if not (manifestacoes.get(id)):
         print("--------------------------------------------")
         print("|         ! Informe um id valido !         |")
     else:
         manifestacao = manifestacoes.get(id)
-        imprimir_dicionario(manifestacao)
+        table[id] = manifestacao
+        imprimir_dicionario(table)
 
 
 def imprimir_dicionario(dicionario):
@@ -204,7 +210,11 @@ def imprimir_dicionario(dicionario):
     table = []
     for key, values in dicionario.items():
         table.append(values)
-    print(tabulate(table, headers="keys", tablefmt="grid"))
+    if len(table) > 0:
+        print(tabulate(table, headers="keys", tablefmt="grid"))
+    else:
+        print("--------------------------------------------------")
+        print("|        ! Nenhum elemento encontrado !          |")
 
 
 def usr_deslogado():
@@ -219,31 +229,33 @@ def usr_deslogado():
         print("----------------------------------------------")
         acao = int(input("Selecione a ação que deseja realizar: "))
         acoes_login(acao)
+
+
 def usr_logado():
     global logado
     while logado:
-
         print("-----------------------------------------------")
         print("Bem vindo ao sistema de ouvidoria da Facisa !")
         print("-----------------------------------------------")
-        print("| 1 - Listar todas as manifestações   |")
-        print("| 2 - Listar todas as sugestões       |")
-        print("| 3 - Listar todas as reclamações     |")
-        print("| 4 - Listar todos os elogios         |")
-        print("| 5 - Criar uma nova manifestação     |")
-        print("| 6 - Pesquisar uma manifestação      |")
-        print("| 7 - Encerrar queixa                 |")
-        print("| 8 - Comentar queixa                 |")
-        print("| 9 - Sair                            |")
-
+        print("| 1 - Listar todas as manifestações         |")
+        print("| 2 - Listar todas as sugestões             |")
+        print("| 3 - Listar todas as reclamações           |")
+        print("| 4 - Listar todos os elogios               |")
+        print("| 5 - Criar uma nova manifestação           |")
+        print("| 6 - Pesquisar uma manifestação            |")
+        print("| 7 - Encerrar queixa                       |")
+        print("| 8 - Comentar manifestação                 |")
+        print("| 9 - Listar minhas manifestações           |")
+        print("| 0 - Sair                                  |")
 
         print("-----------------------------------------------")
-        print("| Usuario Logado:", usuario_logado_nome,"                        |" )
+        print("| Usuario Logado:", usuario_logado_nome, "                        |")
         print("-----------------------------------------------")
         acao = int(input("Selecione a ação que deseja realizar: "))
         acoes_logado(acao)
 
-while(True):
+
+while (True):
     if logado == False:
         usr_deslogado()
     else:
