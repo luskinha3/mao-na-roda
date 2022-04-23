@@ -3,14 +3,16 @@
 
 # funcionalidades extras para implementar
 # criar status da manifestação e a mudança de status -- feito
-# adicionar comentario a manifestação
 # mudar metodo escreve dicionario -- feito
 # sistema de cadastro e login -- feito
 # sistema de log-off -- feito
+# bug heap infinito -- feito
+# adicionar comentario a manifestação
 # bug de retornar vazio na saida dos dicionarios
 # tratar erros de inserir dados errados
-# tratar problema de fechamento dos metodos
 # bloquear comentarios de manifestações com status fechado.
+# verificar função get_by_id
+
 from tabulate import tabulate
 
 
@@ -26,18 +28,8 @@ usuario_logado = {}
 
 usuario_logado_nome = ""
 
+logado = False
 
-
-def menu_login():
-    print("-----------------------------------------------------------------------------------------------")
-    print("Bem vindo ao sistema de ouvidoria da Facisa! Faça seu cadastro e login para utilizar o sistema.")
-    print("-----------------------------------------------------------------------------------------------")
-    print("| 1 - Login              |")
-    print("| 2 - Cadastro           |")
-    print("| 3 - Finalizar programa |")
-    print("----------------------------------------------")
-    acao = int(input("Selecione a ação que deseja realizar: "))
-    acoes_login(acao)
 
 def acoes_login(acaostr):
     acao = int(acaostr)
@@ -45,7 +37,7 @@ def acoes_login(acaostr):
     if acao < 1 or acao > 3:
         print("-------------------------------------")
         print("|         ! Ação invalida !         |")
-        menu_logado()
+
 
     if acao == 1:
         login_usuario()
@@ -67,61 +59,42 @@ def cadastro_usuairo():
     print("-----------------------------------------------")
     print("|          ! Usuario cadastrado !             |")
     print("-----------------------------------------------")
-    menu_login()
+
 
 def logout():
+    print("aaaaaaa")
     global usuario_logado
+    global logado
     usuario_logado = None
-    menu_login()
+    logado = False
 
 def login_usuario():
     global  usuario_logado
     global usuario_logado_nome
+    global logado
     print("-----------------------------------------------")
     print("|          ! Bem vindo ao Login !             |")
     print("-----------------------------------------------")
     email = input("Informe seu E-mail: ").strip().lower()
     senha = input("Informe sua senha: ")
-
+    usuario = usuarios.get(email)
     if not (usuarios.get(email)):
         print("-------------------------------------------------")
         print("|         ! Informe um usuario válido !         |")
-        menu_login()
-
-    usuario = usuarios.get(email)
-
-    if not senha in usuario['Senha']:
+    elif not senha in usuario['Senha']:
         print("-------------------------------------------------")
         print("|         ! Informe uma senha válida !          |")
-        login_usuario()
-    usuario_logado = usuario
-    usuario_logado_nome = usuario["Nome"]
-    menu_logado()
+    else:
+        usuario_logado = usuario
+        usuario_logado_nome = usuario["Nome"]
+        logado = True
 
 
 
 
-def menu_logado():
-    global usuario_logado_nome
-    print("-----------------------------------------------")
-    print("Bem vindo ao sistema de ouvidoria da Facisa !")
-    print("-----------------------------------------------")
-    print("| 1 - Listar todas as manifestações   |")
-    print("| 2 - Listar todas as sugestões       |")
-    print("| 3 - Listar todas as reclamações     |")
-    print("| 4 - Listar todos os elogios         |")
-    print("| 5 - Criar uma nova manifestação     |")
-    print("| 6 - Pesquisar uma manifestação      |")
-    print("| 7 - Encerrar queixa                 |")
-    print("| 8 - Comentar queixa                 |")
-    print("| 9 - Sair                            |")
 
 
-    print("-----------------------------------------------")
-    print("| Usuario Logado:", usuario_logado_nome,"                        |" )
-    print("-----------------------------------------------")
-    acao = int(input("Selecione a ação que deseja realizar: "))
-    acoes_logado(acao)
+
 
 
 def acoes_logado(acaostr):
@@ -129,7 +102,6 @@ def acoes_logado(acaostr):
     if acao < 1 or acao > 9:
         print("-------------------------------------")
         print("|         ! Ação invalida !         |")
-        menu_logado()
 
     if acao == 1:
         list_manifestacoes()
@@ -146,9 +118,8 @@ def acoes_logado(acaostr):
         cadastro()
 
     if acao == 6:
-        print("----------------------------------------------")
-        id = input("Informe o Id da manifestação que deseja procurar:").strip()
-        get_by_id(id)
+
+        get_by_id()
 
     if acao == 7:
         encerrar_manifestacao()
@@ -166,7 +137,7 @@ def encerrar_manifestacao():
     id = int(input("Informe o Id da manifestação que deseja encerrar:").strip())
     manifestacao_encerrada = manifestacoes.get(id)
     manifestacao_encerrada["Status"]= "Encerrada"
-    menu_logado()
+
 
 
 def cadastro():
@@ -179,15 +150,15 @@ def cadastro():
         print("-----------------------------------------------------------------")
         print("|       ! Tipo informado é invalido, tente novamente !          |")
         print("-----------------------------------------------------------------")
-        menu_logado()
-    conteudo = input("Nos detalhe o que deseja manifestar: ").strip()
-    manifestacoes[id] = {"ID": id, "Nome": usuario_logado_nome, "Tipo": tipo, "Conteudo": conteudo, "Status": "Aberta"}
-    manifestacoes_usuario = usuario_logado["Manifestacoes"]
-    manifestacoes_usuario[id] = {"ID": id, "Tipo": tipo, "Conteudo": conteudo}
-    print("----------------------------------------------")
-    print("|   Nova manifestação criada com sucesso!    |")
-    id = len(manifestacoes) + 1
-    menu_logado()
+    else:
+        conteudo = input("Nos detalhe o que deseja manifestar: ").strip()
+        manifestacoes[id] = {"ID": id, "Nome": usuario_logado_nome, "Tipo": tipo, "Conteudo": conteudo, "Status": "Aberta"}
+        manifestacoes_usuario = usuario_logado["Manifestacoes"]
+        manifestacoes_usuario[id] = {"ID": id, "Tipo": tipo, "Conteudo": conteudo}
+        print("----------------------------------------------")
+        print("|   Nova manifestação criada com sucesso!    |")
+        id = len(manifestacoes) + 1
+
 
 
 def sair():
@@ -203,7 +174,7 @@ def list_manifestacoes():
      table[key] = value
 
     imprimir_dicionario(table)
-    menu_logado()
+
 
 
 def busca_por_tipo(tipo):
@@ -213,18 +184,19 @@ def busca_por_tipo(tipo):
         if tipo in manifestacao['Tipo']:
             table[id] = manifestacao
     imprimir_dicionario(table)
-    menu_logado()
 
 
-def get_by_id(id):
-    id_int = int(id) - 1
-    if not (manifestacoes.get(id_int)):
+
+def get_by_id():
+    print("----------------------------------------------")
+    list_manifestacoes()
+    id = int(input("Informe o Id da manifestação que deseja procurar:").strip()) - 1
+    if not (manifestacoes.get(id)):
         print("--------------------------------------------")
         print("|         ! Informe um id valido !         |")
-        menu_logado()
-    manifestacao = manifestacoes.get(id_int)
-    imprimir_dicionario(manifestacao)
-    menu_logado()
+    else:
+        manifestacao = manifestacoes.get(id)
+        imprimir_dicionario(manifestacao)
 
 
 def imprimir_dicionario(dicionario):
@@ -234,4 +206,45 @@ def imprimir_dicionario(dicionario):
         table.append(values)
     print(tabulate(table, headers="keys", tablefmt="grid"))
 
-menu_login()
+
+def usr_deslogado():
+    global logado
+    while not logado:
+        print("-----------------------------------------------------------------------------------------------")
+        print("Bem vindo ao sistema de ouvidoria da Facisa! Faça seu cadastro e login para utilizar o sistema.")
+        print("-----------------------------------------------------------------------------------------------")
+        print("| 1 - Login              |")
+        print("| 2 - Cadastro           |")
+        print("| 3 - Finalizar programa |")
+        print("----------------------------------------------")
+        acao = int(input("Selecione a ação que deseja realizar: "))
+        acoes_login(acao)
+def usr_logado():
+    global logado
+    while logado:
+
+        print("-----------------------------------------------")
+        print("Bem vindo ao sistema de ouvidoria da Facisa !")
+        print("-----------------------------------------------")
+        print("| 1 - Listar todas as manifestações   |")
+        print("| 2 - Listar todas as sugestões       |")
+        print("| 3 - Listar todas as reclamações     |")
+        print("| 4 - Listar todos os elogios         |")
+        print("| 5 - Criar uma nova manifestação     |")
+        print("| 6 - Pesquisar uma manifestação      |")
+        print("| 7 - Encerrar queixa                 |")
+        print("| 8 - Comentar queixa                 |")
+        print("| 9 - Sair                            |")
+
+
+        print("-----------------------------------------------")
+        print("| Usuario Logado:", usuario_logado_nome,"                        |" )
+        print("-----------------------------------------------")
+        acao = int(input("Selecione a ação que deseja realizar: "))
+        acoes_logado(acao)
+
+while(True):
+    if logado == False:
+        usr_deslogado()
+    else:
+        usr_logado()
