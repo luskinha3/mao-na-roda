@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # development-branch
 
-# funcionalidades extras para implementar
+# funcionalidades extras para implementar e bug fixes
 # criar status da manifestação e a mudança de status -- feito
 # mudar metodo escreve dicionario -- feito
 # sistema de cadastro e login -- feito
@@ -11,9 +11,12 @@
 # adicionar o lsitar minhas reclamações -- feito
 # verificar função get_by_id -- feito
 # tratar erros de inserir dados errados -- feito
+# remover manifestação. -- feito
 
-# adicionar comentario a manifestação and bloquear comentarios de manifestações com status fechado
-# saber o tipo da manifestação e permitir ou não o encerramento.
+# adicionar comentario a manifestação
+
+
+
 
 
 from tabulate import tabulate
@@ -64,7 +67,6 @@ def cadastro_usuairo():
 
 
 def logout():
-    print("aaaaaaa")
     global usuario_logado
     global logado
     usuario_logado = None
@@ -121,13 +123,14 @@ def acoes_logado(acaostr):
         busca_por_tipo('elogio')
 
     if acao == 5:
-        cadastro()
+        cadastra_manifestacao()
 
     if acao == 6:
         get_by_id()
 
     if acao == 7:
-        encerrar_manifestacao()
+        # modificar o metodo de encerramento, colocar funcionalidade de remover.
+        remover_manifestacao()
     if acao == 8:
         print("adicionar comentario")
 
@@ -137,17 +140,33 @@ def acoes_logado(acaostr):
         logout()
 
 
-def encerrar_manifestacao():
-    # imprimir lista de queixas do usuario
-    manifestacoes = usuario_logado["Manifestacoes"]
-    imprimir_dicionario(manifestacoes)
-    print("----------------------------------------------")
-    id = int(input("Informe o Id da manifestação que deseja encerrar:").strip())
-    manifestacao_encerrada = manifestacoes.get(id)
-    manifestacao_encerrada["Status"] = "Encerrada"
+def remover_manifestacao():
+    global manifestacoes
+    manifestacoes_usr = usuario_logado["Manifestacoes"]
+    vazio = not bool (manifestacoes_usr)
+
+    if  vazio:
+        print("------------------------------------------------------------------")
+        print("|       ! Você não tem nenhuma manifestação para excluir !       |")
+        print("------------------------------------------------------------------")
+    else:
+        imprimir_dicionario(manifestacoes_usr)
+        print("----------------------------------------------")
+        id = int(input("Informe o Id da manifestação que deseja encerrar:").strip())
+        id_incorreto = not bool (manifestacoes_usr.get(id))
+        if id_incorreto:
+            print("------------------------------------------------------------------")
+            print("|                  ! Informe um ID válido !                      |")
+            print("------------------------------------------------------------------")
+        else:
+            print("------------------------------------------------------------------")
+            print("|       ! Manifestação removida com sucesso !       |")
+            print("------------------------------------------------------------------")
+            manifestacoes_usr.pop(id)
+            manifestacoes.pop(id)
 
 
-def cadastro():
+def cadastra_manifestacao():
     global id
     global usuario_logado_nome
     print("----------------------------------------------")
@@ -159,8 +178,7 @@ def cadastro():
         print("-----------------------------------------------------------------")
     else:
         conteudo = input("Nos detalhe o que deseja manifestar: ").strip()
-        manifestacoes[id] = {"ID": id, "Nome": usuario_logado_nome, "Tipo": tipo, "Conteudo": conteudo,
-                             "Status": "Aberta"}
+        manifestacoes[id] = {"ID": id, "Nome": usuario_logado_nome, "Tipo": tipo, "Conteudo": conteudo }
         manifestacoes_usuario = usuario_logado["Manifestacoes"]
         manifestacoes_usuario[id] = {"ID": id, "Tipo": tipo, "Conteudo": conteudo}
         print("----------------------------------------------")
