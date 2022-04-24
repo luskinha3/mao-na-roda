@@ -1,21 +1,4 @@
 # -*- coding: utf-8 -*-
-# development-branch
-
-# funcionalidades extras para implementar e bug fixes
-# criar status da manifestação e a mudança de status -- feito
-# mudar metodo escreve dicionario -- feito
-# sistema de cadastro e login -- feito
-# sistema de log-off -- feito
-# bug heap infinito -- feito
-# tratar retorno vazio na saida dos dicionarios -- feito
-# adicionar o lsitar minhas reclamações -- feito
-# verificar função get_by_id -- feito
-# tratar erros de inserir dados errados -- feito
-# remover manifestação. -- feito
-
-# adicionar comentario a manifestação
-
-
 from tabulate import tabulate
 
 manifestacoes = {}
@@ -269,16 +252,3 @@ while iniciar:
     else:
         usr_logado()
 
-# def comentar_manifestacao():
-#    print("-----------------------------------------------------")
-#    list_manifestacoes()
-#    print("-----------------------------------------------------")
-#    id = int(input("Informe o id da manifestação que deseja comentar: "))
-# tratar a informação de um id invalido.
-#    manifestacao = manifestacoes.get(id)
-
-#   comentario = input("Insira seu comentário: ")
-#  comentarios = manifestacao["Comentarios"]
-# comentarios[1] = comentario
-
-# print("Comentario inserido com sucesso")
