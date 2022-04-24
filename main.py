@@ -16,9 +16,6 @@
 # adicionar comentario a manifestação
 
 
-
-
-
 from tabulate import tabulate
 
 manifestacoes = {}
@@ -34,6 +31,8 @@ usuario_logado = {}
 usuario_logado_nome = ""
 
 logado = False
+
+iniciar = True
 
 
 def acoes_login(acaostr):
@@ -59,8 +58,8 @@ def cadastro_usuairo():
     nome = input("Informe seu nome: ").strip().lower()
     email = input("Informe seu e-mail: ").strip().lower()
     senha = input("Informe sua senha: ")
-    manifestacoes = {}
-    usuarios[email] = {"Nome": nome, "E-mail": email, "Senha": senha, "Manifestacoes": manifestacoes}
+    manifestacoes_usr = {}
+    usuarios[email] = {"Nome": nome, "E-mail": email, "Senha": senha, "Manifestacoes": manifestacoes_usr}
     print("-----------------------------------------------")
     print("|          ! Usuario cadastrado !             |")
     print("-----------------------------------------------")
@@ -86,7 +85,7 @@ def login_usuario():
     if not (usuarios.get(email)):
         print("-------------------------------------------------")
         print("|         ! Informe um usuario válido !         |")
-    elif not senha in usuario['Senha']:
+    elif senha not in usuario['Senha']:
         print("-------------------------------------------------")
         print("|         ! Informe uma senha válida !          |")
     else:
@@ -98,8 +97,8 @@ def login_usuario():
 def list_manifestacoes_usr():
     table = {}
     global usuario_logado
-    manifestacoes = usuario_logado["Manifestacoes"]
-    for key, value in manifestacoes.items():
+    manifestacoes_listar = usuario_logado["Manifestacoes"]
+    for key, value in manifestacoes_listar.items():
         table[key] = value
 
     imprimir_dicionario(table)
@@ -115,25 +114,17 @@ def acoes_logado(acaostr):
         list_manifestacoes()
     if acao == 2:
         busca_por_tipo('sugestão')
-
     if acao == 3:
         busca_por_tipo('reclamação')
-
     if acao == 4:
         busca_por_tipo('elogio')
-
     if acao == 5:
         cadastra_manifestacao()
-
     if acao == 6:
         get_by_id()
-
     if acao == 7:
         remover_manifestacao()
     if acao == 8:
-        comentar_manifestacao()
-
-    if acao == 9:
         list_manifestacoes_usr()
     if acao == 0:
         logout()
@@ -142,17 +133,17 @@ def acoes_logado(acaostr):
 def remover_manifestacao():
     global manifestacoes
     manifestacoes_usr = usuario_logado["Manifestacoes"]
-    vazio = not bool (manifestacoes_usr)
+    vazio = not bool(manifestacoes_usr)
 
-    if  vazio:
+    if vazio:
         print("------------------------------------------------------------------")
         print("|       ! Você não tem nenhuma manifestação para excluir !       |")
         print("------------------------------------------------------------------")
     else:
         imprimir_dicionario(manifestacoes_usr)
         print("----------------------------------------------")
-        id = int(input("Informe o Id da manifestação que deseja encerrar:").strip())
-        id_incorreto = not bool (manifestacoes_usr.get(id))
+        id_encerramento = int(input("Informe o Id da manifestação que deseja encerrar:").strip())
+        id_incorreto = not bool(manifestacoes_usr.get(id_encerramento))
         if id_incorreto:
             print("------------------------------------------------------------------")
             print("|                  ! Informe um ID válido !                      |")
@@ -161,18 +152,14 @@ def remover_manifestacao():
             print("------------------------------------------------------------------")
             print("|       ! Manifestação removida com sucesso !       |")
             print("------------------------------------------------------------------")
-            manifestacoes_usr.pop(id)
-            manifestacoes.pop(id)
+            manifestacoes_usr.pop(id_encerramento)
+            manifestacoes.pop(id_encerramento)
 
-def comentar_manifestacao():
-    print("-----------------------------------------------------")
-    list_manifestacoes()
-    print("-----------------------------------------------------")
-    id = int(input("Informe o id da manifestação que deseja comentar: "))
 
 def cadastra_manifestacao():
     global id
     global usuario_logado_nome
+
     print("----------------------------------------------")
     print("Bem vindo ao cadastro de uma nova reclamação")
     tipo = input("Informe o tipo da reclamação ----> Opções: |Elogio|Reclamação|Sugestão| ").lower().strip()
@@ -182,7 +169,7 @@ def cadastra_manifestacao():
         print("-----------------------------------------------------------------")
     else:
         conteudo = input("Nos detalhe o que deseja manifestar: ").strip()
-        manifestacoes[id] = {"ID": id, "Nome": usuario_logado_nome, "Tipo": tipo, "Conteudo": conteudo }
+        manifestacoes[id] = {"ID": id, "Nome": usuario_logado_nome, "Tipo": tipo, "Conteudo": conteudo}
         manifestacoes_usuario = usuario_logado["Manifestacoes"]
         manifestacoes_usuario[id] = {"ID": id, "Tipo": tipo, "Conteudo": conteudo}
         print("----------------------------------------------")
@@ -208,22 +195,22 @@ def list_manifestacoes():
 def busca_por_tipo(tipo):
     table = {}
 
-    for id, manifestacao in manifestacoes.items():
+    for key, manifestacao in manifestacoes.items():
         if tipo in manifestacao['Tipo']:
-            table[id] = manifestacao
+            table[key] = manifestacao
     imprimir_dicionario(table)
 
 
 def get_by_id():
     table = {}
     print("----------------------------------------------")
-    id = int(input("Informe o Id da manifestação que deseja procurar:").strip()) - 1
-    if not (manifestacoes.get(id)):
+    id_manifestacao = int(input("Informe o Id da manifestação que deseja procurar:").strip()) - 1
+    if not (manifestacoes.get(id_manifestacao)):
         print("--------------------------------------------")
         print("|         ! Informe um id valido !         |")
     else:
-        manifestacao = manifestacoes.get(id)
-        table[id] = manifestacao
+        manifestacao = manifestacoes.get(id_manifestacao)
+        table[id_manifestacao] = manifestacao
         imprimir_dicionario(table)
 
 
@@ -266,8 +253,7 @@ def usr_logado():
         print("| 5 - Criar uma nova manifestação           |")
         print("| 6 - Pesquisar uma manifestação            |")
         print("| 7 - Encerrar queixa                       |")
-        print("| 8 - Comentar manifestação                 |")
-        print("| 9 - Listar minhas manifestações           |")
+        print("| 8 - Listar minhas manifestações           |")
         print("| 0 - Sair                                  |")
 
         print("-----------------------------------------------")
@@ -277,8 +263,22 @@ def usr_logado():
         acoes_logado(acao)
 
 
-while (True):
-    if logado == False:
+while iniciar:
+    if logado.__eq__(False):
         usr_deslogado()
     else:
         usr_logado()
+
+# def comentar_manifestacao():
+#    print("-----------------------------------------------------")
+#    list_manifestacoes()
+#    print("-----------------------------------------------------")
+#    id = int(input("Informe o id da manifestação que deseja comentar: "))
+# tratar a informação de um id invalido.
+#    manifestacao = manifestacoes.get(id)
+
+#   comentario = input("Insira seu comentário: ")
+#  comentarios = manifestacao["Comentarios"]
+# comentarios[1] = comentario
+
+# print("Comentario inserido com sucesso")
