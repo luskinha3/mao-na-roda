@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# adicionar tratamento de rollback
 # adicionar hash paras senha
-# impedir mysql injection
-# consertar a captura do nome do usuario
+# consertar a captura do nome dos usuarios
+# inserir e tratar exceptions
+# impedir que o usuario remova manifestações que não são dele
 
 import pymysql
 
@@ -18,6 +18,7 @@ class Conexao:
          return self.conexao
 class Usuario:
 
+  id = 0
   nome = ""
   email = ""
   senha = ""
@@ -37,35 +38,16 @@ class Usuario:
   def get_senha(self):
       return self.senha
 
-
-class Manifestacao:
-
-  id_usuario = 0
-  tipo = ''
-  conteudo = ''
-
-  def __init__(self,Usuario,tipo,conteudo):
-      self.Usuario = Usuario
-      self.tipo = tipo
-      self.conteudo = conteudo
-
-  def get_tipo(self):
-      return self.tipo
-
-  def get_conteudo(self):
-      return self.conteudo
-
-  def get_Usuario(self):
-      return self.Usuario
-
-
-
 class Sistema:
 
   manifestacoes = {}
   usuario_logado = None
+  logado = False
 
-
+  def get_logado(self):
+      return self.logado
+  def set_logado(self,estado):
+      self.logado = estado
 
   def acoes_login(self,acaostr):
       acao = int(acaostr)
@@ -132,16 +114,14 @@ class Sistema:
           conexao.close()
           raise Exception
       else:
-          usuario = Usuario("Pucca",email,senha)
+          usuario = Usuario("puquinha",email,senha)
           self.usuario_logado = usuario
           self.usuario_logado_nome = nome
           conexao.close()
-          return True
+          self.set_logado(True)
 
 
 
-
-      #return True
 
   def sair(self):
       print("Obrigado por utilizar nosso sitema !")
@@ -155,48 +135,143 @@ class Sistema:
           print("|         ! Ação invalida !         |")
 
       if acao == 1:
-          self.list_manifestacoes()
+          manifestacoes = self.list_manifestacoes()
       if acao == 2:
-          self.busca_por_tipo('sugestão')
+          manifestacoes = self.busca_por_tipo('sugestão')
       if acao == 3:
-          self.busca_por_tipo('reclamação')
+          manifestacoes = self.busca_por_tipo('reclamação')
       if acao == 4:
-          self.busca_por_tipo('elogio')
+          manifestacoes = self.busca_por_tipo('elogio')
       if acao == 5:
-          self.cadastra_manifestacao()
+          print("----------------------------------------------")
+          print("Bem vindo ao cadastro de uma nova reclamação")
+          tipo = input("Informe o tipo da reclamação ----> Opções: |Elogio|Reclamação|Sugestão| ").lower().strip()
+          conteudo = input("Nos detalhe o que deseja manifestar: ").strip()
+          self.cadastra_manifestacao(tipo, conteudo, 5)
       if acao == 6:
-          self.get_by_id()
+          print("----------------------------------------------")
+          id_manifestacao = int(input("Informe o Id da manifestação que deseja procurar:").strip())
+          manifestacao = self.get_by_id(id_manifestacao)
       if acao == 7:
-          self.remover_manifestacao()
+          print("----------------------------------------------")
+          id_encerramento = int(input("Informe o Id da manifestação que deseja encerrar:").strip())
+          self.remover_manifestacao(id_encerramento)
       if acao == 8:
-          self.list_manifestacoes_usr()
+          manifestacoes_usr = self.list_manifestacoes_usr(self.usuario_logado.get_nome())
       if acao == 0:
           self.logout()
 
+  def list_manifestacoes(self):
 
+      dataBase = Conexao()
+      conexao = dataBase.conexao()
+      cursor = conexao.cursor()
+
+      comandoSql = "SELECT id_manifestacao, conteudo, tipo, usuarios.nome_usuario FROM manifestacoes INNER JOIN usuarios on manifestacoes.usuario = usuarios.id_usuario"
+
+      cursor.execute(comandoSql)
+      manifestacoes = cursor.fetchall()
+      conexao.close()
+      return manifestacoes
+
+  def list_manifestacoes_usr(self, nome):
+
+      dataBase = Conexao()
+      conexao = dataBase.conexao()
+      cursor = conexao.cursor()
+
+      comandoSql = "SELECT id_manifestacao, conteudo, tipo, usuarios.nome_usuario FROM manifestacoes INNER JOIN usuarios on manifestacoes.usuario = usuarios.id_usuario where usuarios.nome_usuario = %s"
+      dados = nome
+      cursor.execute(comandoSql, dados)
+      manifestacoes = cursor.fetchall()
+      conexao.close()
+      return manifestacoes
+
+  def busca_por_tipo(self,tipo):
+
+      dataBase = Conexao()
+      conexao = dataBase.conexao()
+      cursor = conexao.cursor()
+
+      comandoSql = "SELECT id_manifestacao, conteudo, tipo, usuarios.nome_usuario FROM manifestacoes INNER JOIN usuarios on manifestacoes.usuario = usuarios.id_usuario WHERE tipo = %s "
+      dados = tipo
+      cursor.execute(comandoSql, dados)
+      manifestacoes = cursor.fetchall()
+
+      conexao.close()
+      return manifestacoes
+
+
+
+  def cadastra_manifestacao(self, tipo, conteudo, id_usuario):
+
+      dataBase = Conexao()
+      conexao = dataBase.conexao()
+      cursor = conexao.cursor()
+
+      comandoSql = "INSERT INTO manifestacoes (conteudo,tipo,usuario) VALUES (%s,%s,%s) "
+      dados = (str(conteudo), str(tipo), int(id_usuario))
+
+      try:
+        cursor.execute(comandoSql, dados)
+        conexao.commit()
+      except Exception as e:
+          print("deu ruim")
+          conexao.rollback()
+      finally:
+        conexao.close()
+
+  def remover_manifestacao(self, id):
+
+      dataBase = Conexao()
+      conexao = dataBase.conexao()
+      cursor = conexao.cursor()
+
+      comandoSql = "DELETE FROM  manifestacoes  WHERE manifestacoes.id_manifestacao = %s "
+      dados = int(id)
+
+      try:
+          cursor.execute(comandoSql, dados)
+          conexao.commit()
+      except Exception as e:
+          print("deu ruim")
+          conexao.rollback()
+      finally:
+        conexao.close()
+
+
+  def get_by_id(self, id):
+
+      dataBase = Conexao()
+      conexao = dataBase.conexao()
+      cursor = conexao.cursor()
+
+      comandoSql = "SELECT id_manifestacao, conteudo, tipo, usuarios.nome_usuario FROM manifestacoes INNER JOIN usuarios on manifestacoes.usuario = usuarios.id_usuario WHERE id_manifestacao = %s "
+      dados = id
+      cursor.execute(comandoSql, dados)
+      manifestacoes = cursor.fetchall()
+      print(manifestacoes)
+      conexao.close()
+      return manifestacoes
+
+  def logout(self):
+      self.set_logado(False)
 
 
 class Menu:
 
     sistema = Sistema()
-    logado = False
-
-    def get_logado(self):
-        return self.logado
-
-    def set_logado(self, logado):
-        self.logado = logado
 
     def iniciar(self):
 
         while True:
-            if self.get_logado():
+            if self.sistema.get_logado():
                 self.usr_logado()
             else:
                 self.usr_deslogado()
 
     def usr_deslogado(self):
-        while not self.logado:
+        while not self.sistema.get_logado():
             print("-----------------------------------------------------------------------------------------------")
             print("Bem vindo ao sistema de ouvidoria da Facisa! Faça seu cadastro e login para utilizar o sistema.")
             print("-----------------------------------------------------------------------------------------------")
@@ -205,12 +280,11 @@ class Menu:
             print("| 3 - Finalizar programa |")
             print("----------------------------------------------")
             acao = int(input("Selecione a ação que deseja realizar: "))
-            resultado = self.sistema.acoes_login(acao)
-            if acao == 1:
-                self.set_logado(resultado)
+            self.sistema.acoes_login(acao)
+
 
     def usr_logado(self):
-        while self.logado:
+        while self.sistema.get_logado():
             print("-----------------------------------------------")
             print("Bem vindo ao sistema de ouvidoria da Facisa !")
             print("-----------------------------------------------")
@@ -220,7 +294,7 @@ class Menu:
             print("| 4 - Listar todos os elogios               |")
             print("| 5 - Criar uma nova manifestação           |")
             print("| 6 - Pesquisar uma manifestação            |")
-            print("| 7 - Encerrar queixa                       |")
+            print("| 7 - Excluir manifestação                  |")
             print("| 8 - Listar minhas manifestações           |")
             print("| 0 - Sair                                  |")
 
@@ -238,33 +312,31 @@ class Main:
 
   menu = Menu()
   menu.iniciar()
-  #banco = Conexao()
-  #banco.conexao()
 
 
-  '''
-  def cadastra_manifestacao(self):
-      global id
-      global usuario_logado_nome
+  ''' classe para ser implementado no modelo rest futuramente
+  class Manifestacao:
 
-      print("----------------------------------------------")
-      print("Bem vindo ao cadastro de uma nova reclamação")
-      tipo = input("Informe o tipo da reclamação ----> Opções: |Elogio|Reclamação|Sugestão| ").lower().strip()
+  id_usuario = 0
+  tipo = ''
+  conteudo = ''
+  usuario = None
 
-      if tipo != "elogio" and tipo != "reclamação" and tipo != "sugestão":
-          raise NameError(("|       ! Tipo informado é invalido, tente novamente !          |"))
+  def __init__(self,Usuario,tipo,conteudo):
+      self.Usuario = Usuario
+      self.tipo = tipo
+      self.conteudo = conteudo
 
-      conteudo = input("Nos detalhe o que deseja manifestar: ").strip()
-      manifestacao = Manifestacao(self.usuario_logado,tipo,conteudo)
-      manifestacoes_usuario = self.usuario_logado.getManifestacoes()
-      manifestacoes_usuario[self.id] = manifestacao
-      print("----------------------------------------------")
-      print("|   Nova manifestação criada com sucesso!    |")
-      id =+ 1
+  def get_tipo(self):
+      return self.tipo
+
+  def get_conteudo(self):
+      return self.conteudo
+
+  def get_Usuario(self):
+      return self.Usuario
       
-       def logout(self):
-      self.usuario_logado = None
-      self.logado = False
+       
       
       
     '''
