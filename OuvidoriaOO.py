@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 # adicionar hash paras senha
-# consertar a captura do nome dos usuarios
-# inserir e tratar exceptions
+# inserir e tratar exceptions (login errado, excluir uma manifestação que não é sua)
 # impedir que o usuario remova manifestações que não são dele
 
 import pymysql
+from tabulate import tabulate
 
 
 class Conexao:
@@ -113,15 +113,16 @@ class Sistema:
 
         usuario = cursor.execute(comandoSql, dados)
 
-        nome = cursor.fetchall()
+        dados = cursor.fetchall()
+        nome = ','.join(dados[0])
+        print(nome)
 
         if usuario == 0:
             conexao.close()
             raise Exception
         else:
-            usuario = Usuario("puquinha", email, senha)
+            usuario = Usuario(nome, email, senha)
             self.usuario_logado = usuario
-            self.usuario_logado_nome = nome
             conexao.close()
             self.set_logado(True)
 
@@ -138,12 +139,16 @@ class Sistema:
 
         if acao == 1:
             manifestacoes = self.list_manifestacoes()
+            self.imprimir_tupla(manifestacoes)
         if acao == 2:
             manifestacoes = self.busca_por_tipo('sugestão')
+            self.imprimir_tupla(manifestacoes)
         if acao == 3:
             manifestacoes = self.busca_por_tipo('reclamação')
+            self.imprimir_tupla(manifestacoes)
         if acao == 4:
             manifestacoes = self.busca_por_tipo('elogio')
+            self.imprimir_tupla(manifestacoes)
         if acao == 5:
             print("----------------------------------------------")
             print("Bem vindo ao cadastro de uma nova reclamação")
@@ -154,12 +159,14 @@ class Sistema:
             print("----------------------------------------------")
             id_manifestacao = int(input("Informe o Id da manifestação que deseja procurar:").strip())
             manifestacao = self.get_by_id(id_manifestacao)
+            self.imprimir_tupla(manifestacao)
         if acao == 7:
             print("----------------------------------------------")
             id_encerramento = int(input("Informe o Id da manifestação que deseja encerrar:").strip())
             self.remover_manifestacao(id_encerramento)
         if acao == 8:
             manifestacoes_usr = self.list_manifestacoes_usr(self.usuario_logado.get_nome())
+            self.imprimir_tupla(manifestacoes_usr)
         if acao == 0:
             self.logout()
 
@@ -249,9 +256,19 @@ class Sistema:
         dados = id
         cursor.execute(comandoSql, dados)
         manifestacoes = cursor.fetchall()
-        print(manifestacoes)
         conexao.close()
         return manifestacoes
+
+    def imprimir_tupla(self,tupla):
+        # receber uma tupla e transformar em array
+        table = []
+        for linha in tupla:
+            table.append(linha)
+        if len(table) > 0:
+            print(tabulate(table, headers=["ID","Conteúdo","Tipo","Autor"], tablefmt="grid"))
+        else:
+            print("--------------------------------------------------")
+            print("|        ! Nenhum elemento encontrado !          |")
 
     def logout(self):
         self.set_logado(False)
