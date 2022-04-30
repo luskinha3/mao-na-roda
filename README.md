@@ -4,3 +4,4 @@
 | Package | Link |
 | ------ | ------ |
 | Tabulate | https://pypi.org/project/tabulate/ |
+| PyMySQL  |https://pypi.org/project/PyMySQL/ |
