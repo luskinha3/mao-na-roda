@@ -39,42 +39,7 @@ class Sistema:
         conexao.close()
         return resultado
 
-    def acoes_login(self, acaostr):
-        acao = int(acaostr)
 
-        if acao < 1 or acao > 3:
-            print("-------------------------------------")
-            print("|         ! Ação invalida !         |")
-
-        # logar
-        if acao == 1:
-            print("-----------------------------------------------")
-            print("|          ! Bem vindo ao Login !             |")
-            print("-----------------------------------------------")
-            email = input("Informe seu E-mail: ").strip().lower()
-            senha = input("Informe sua senha: ")
-            try:
-                self.login_usuario(email, senha)
-
-            except Exception as e:
-                print("-------------------------------------------------------")
-                print("|     ! Informações invalidas, tente novamente !     |")
-
-        # cadastrar
-        if acao == 2:
-            print("-----------------------------------------------")
-            print("|         ! Bem vindo ao cadastro !           |")
-            print("-----------------------------------------------")
-            nome = input("Informe seu nome: ").strip().lower()
-            email = input("Informe seu e-mail: ").strip().lower()
-            senha = input("Informe sua senha: ")
-            sucesso = self.cadastro_usuario(nome, email, senha)
-            if sucesso:
-                print("| Usuario cadastrado com sucesso !")
-            else:
-                print("| algo não ocorreu como esperado !")
-        if acao == 3:
-            self.sair()
 
     def cadastro_usuario(self, nome, email, senha):
 
@@ -134,56 +99,7 @@ class Sistema:
         print("----------------------------------------------")
         exit()
 
-    def acoes_logado(self, acaostr):
-        acao = int(acaostr)
-        if acao < 0 or acao > 9:
-            print("-------------------------------------")
-            print("|         ! Ação invalida !         |")
 
-        if acao == 1:
-            manifestacoes = self.list_manifestacoes()
-            self.imprimir_tupla(manifestacoes)
-        if acao == 2:
-            manifestacoes = self.busca_por_tipo('sugestão')
-            self.imprimir_tupla(manifestacoes)
-        if acao == 3:
-            manifestacoes = self.busca_por_tipo('reclamação')
-            self.imprimir_tupla(manifestacoes)
-        if acao == 4:
-            manifestacoes = self.busca_por_tipo('elogio')
-            self.imprimir_tupla(manifestacoes)
-        if acao == 5:
-            print("----------------"
-                  "------------------------------")
-            print("Bem vindo ao cadastro de uma nova reclamação")
-            tipo = input("Informe o tipo da reclamação ----> Opções: |Elogio|Reclamação|Sugestão| ").lower().strip()
-            conteudo = input("Nos detalhe o que deseja manifestar: ").strip()
-            id_usr = self.usuario_logado.get_id()
-            try:
-                self.cadastra_manifestacao(tipo, conteudo, id_usr)
-                print("-----------------------------------------------------------------")
-                print("|             ! Manifestação cadastrada com sucesso !             |")
-            except Exception as e:
-                print("-----------------------------------------------------------------")
-                print("|         !Não foi possivel cadastrar a manifestação!           |")
-        if acao == 6:
-            print("----------------------------------------------")
-            id_manifestacao = int(input("Informe o Id da manifestação que deseja procurar:").strip())
-            manifestacao = self.get_by_id(id_manifestacao)
-            self.imprimir_tupla(manifestacao)
-        if acao == 7:
-            print("----------------------------------------------")
-            id_encerramento = int(input("Informe o Id da manifestação que deseja encerrar:").strip())
-            try:
-                self.remover_manifestacao(id_encerramento, self.usuario_logado)
-            except  Exception as e:
-                print("-------------------------------------------------------------------")
-                print("| !Não foi possivel excluir a manifestação, informa um ID válido! |")
-        if acao == 8:
-            manifestacoes_usr = self.list_manifestacoes_usr(self.usuario_logado.get_nome())
-            self.imprimir_tupla(manifestacoes_usr)
-        if acao == 0:
-            self.logout()
 
     def list_manifestacoes(self):
 
