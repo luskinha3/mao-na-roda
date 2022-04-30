@@ -1,53 +1,8 @@
-# -*- coding: utf-8 -*-
-
-
-# separar em arquivos
-
-import pymysql
-import hashlib
+from ConexaoClass import Conexao
+from UsuarioClass import Usuario
 import uuid
+import hashlib
 from tabulate import tabulate
-
-
-class Conexao:
-    conexao = None
-
-    def get_conexao(self):
-        try:
-            self.conexao = pymysql.connect(host="bv2rebwf6zzsv341.cbetxkdyhwsb.us-east-1.rds.amazonaws.com", port=3306,
-                                           database="o9ipsxm355ufciyi", user="yus0av9ms1xqmj1q",
-                                           password="dvnwd91rnw5tyzho")
-        except Exception as e:
-            print("Conexão não pode ser concluída")
-        finally:
-            return self.conexao
-
-
-class Usuario:
-    id = 0
-    nome = ""
-    email = ""
-    senha = ""
-    manifestacoes = {}
-
-    def __init__(self, id, nome, email, senha):
-        self.id = id
-        self.nome = nome
-        self.email = email
-        self.senha = senha
-
-    def get_nome(self):
-        return self.nome
-
-    def get_email(self):
-        return self.email
-
-    def get_senha(self):
-        return self.senha
-
-    def get_id(self):
-        return self.id
-
 
 class Sistema:
     manifestacoes = {}
@@ -222,8 +177,8 @@ class Sistema:
             try:
                 self.remover_manifestacao(id_encerramento, self.usuario_logado)
             except  Exception as e:
-                print("-----------------------------------------------------------------------------")
-                print("|      !Não foi possivel excluir a manifestação, informa um ID válido!      |")
+                print("-------------------------------------------------------------------")
+                print("| !Não foi possivel excluir a manifestação, informa um ID válido! |")
         if acao == 8:
             manifestacoes_usr = self.list_manifestacoes_usr(self.usuario_logado.get_nome())
             self.imprimir_tupla(manifestacoes_usr)
@@ -338,72 +293,3 @@ class Sistema:
     def logout(self):
         self.set_logado(False)
 
-
-class Menu:
-    sistema = Sistema()
-
-    def iniciar(self):
-
-        while True:
-            if self.sistema.get_logado():
-                self.usr_logado()
-            else:
-                self.usr_deslogado()
-
-    def usr_deslogado(self):
-        while not self.sistema.get_logado():
-            print("-----------------------------------------------------------------------------------------------")
-            print("Bem vindo ao sistema de ouvidoria da Facisa! Faça seu cadastro e login para utilizar o sistema.")
-            print("-----------------------------------------------------------------------------------------------")
-            print("| 1 - Login              |")
-            print("| 2 - Cadastro           |")
-            print("| 3 - Finalizar programa |")
-            print("----------------------------------------------")
-            acao = int(input("Selecione a ação que deseja realizar: "))
-            self.sistema.acoes_login(acao)
-
-    def usr_logado(self):
-        while self.sistema.get_logado():
-            print("-----------------------------------------------")
-            print("Bem vindo ao sistema de ouvidoria da Facisa !")
-            print("-----------------------------------------------")
-            print("| 1 - Listar todas as manifestações         |")
-            print("| 2 - Listar todas as sugestões             |")
-            print("| 3 - Listar todas as reclamações           |")
-            print("| 4 - Listar todos os elogios               |")
-            print("| 5 - Criar uma nova manifestação           |")
-            print("| 6 - Pesquisar uma manifestação            |")
-            print("| 7 - Excluir manifestação                  |")
-            print("| 8 - Listar minhas manifestações           |")
-            print("| 0 - Sair                                  |")
-
-            print("-----------------------------------------------")
-            nome = self.sistema.usuario_logado.get_nome()
-            print("| Usuario Logado: " + nome + " |")
-            print("-----------------------------------------------")
-            acao = int(input("Selecione a ação que deseja realizar: "))
-            self.sistema.acoes_logado(acao)
-
-
-class Main:
-    menu = Menu()
-    menu.iniciar()
-
-    '''
-    classe para ser implementado no modelo rest futuramente
- class Manifestacao:
- id_usuario = 0
- tipo = ''
- conteudo = ''
- usuario = None
- def __init__(self,Usuario,tipo,conteudo):
-     self.Usuario = Usuario
-     self.tipo = tipo
-     self.conteudo = conteudo
- def get_tipo(self):
-     return self.tipo
- def get_conteudo(self):
-     return self.conteudo
- def get_Usuario(self):
-     return self.Usuario
- '''
